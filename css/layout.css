@@ -1,5 +1,5 @@
 #textpage {
-  width:400px;
+  width:100%;
   margin:55px auto 0 auto;
   font-size:14pt;
   display:none;
@@ -30,13 +30,6 @@
   z-index:1;
   width:50px;
   opacity:0.5;
-}
-
-#flipleft {
-  left:5px;
-}
-#flipright{
-  right:5px;
 }
 
 .flip-btn img {
