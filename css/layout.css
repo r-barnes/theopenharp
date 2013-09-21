@@ -1,3 +1,23 @@
+#textpage {
+  width:400px;
+  margin:55px auto 0 auto;
+  font-size:14pt;
+  display:none;
+}
+
+#pagedrop {
+  display:none;
+}
+
+.words, .tune {
+  margin:5px 5px;
+  font-weight:bold;
+}
+
+#parent {
+  display:none;
+}
+
 #parent, #panzoom {
   position:fixed;
   width:100%;
