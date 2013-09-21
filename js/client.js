@@ -27,7 +27,7 @@ function LoadBook(path, type){
       book.loaded=true;
       book.curpage=1;
       book.minpage=1;
-      book.type="images"
+      book.type="images";
       book.pages='data/'+path+'/'+data.prefix;
       book.padlen=book.maxpage.toString().length;
       $('#textpage').hide();
@@ -77,6 +77,7 @@ function LoadPage(page){
     $('#textpage .lyrics').html(book.pages[book.curpage].lyrics);
   }
   $('#pagedrop').val(book.curpage);
+  console.log('Page loaded.');
 }
 
 function FlipPage(inc){
@@ -102,7 +103,9 @@ $(document).ready(function(){
   $('#flipleft') .click(function(){ FlipPage(-1); });
   $('#flipright').click(function(){ FlipPage( 1); });
   $('#pagedrop').change(function(){
-    LoadPage($(this).val());
+    if(!book.loaded) return;
+    console.log('Page drop changed');
+    LoadPage(parseInt($(this).val()));
   });
   $(document).bind('keydown', function(event){
     if(!book.loaded) return;
