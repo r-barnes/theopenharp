@@ -6,18 +6,27 @@ function pad(num, size){ return ('000000000' + num).substr(-size); }
 function SetupDropdown(){
   if(!book.loaded) return;
 
-  var pagedrop=$('#pagedrop');
+  var contents=$('#contents');
 
-  pagedrop.show();
-  pagedrop.empty();
+  contents.empty();
 
   if(book.type=="images"){
     for(var i=book.minpage;i<=book.maxpage;++i)
-      pagedrop.append('<option value="'+i+'">'+i+'</option>');
+      contents.append('<div class="btn"><a class="content" href="#" data-page="'+i+'">'+i+'</a></div>');
   } else if (book.type=="text") {
     for(var i=book.minpage;i<=book.maxpage;++i)
-      pagedrop.append('<option value="'+i+'">'+book.pages[i].number+" "+book.pages[i].name+'</option>');
+      contents.append('<div class="btn"><a class="content" href="#" data-page="'+i+'">'+book.pages[i].number+" "+book.pages[i].name+'</a></div>');
   }
+
+  $('#contents a').click(function(){
+    if(!book.loaded) return;
+    $('#contents').hide();
+    if(book.type=="images")
+      $('#parent').show();
+    else if (book.type=="text")
+      $('#textpage').show();
+    LoadPage(parseInt($(this).data('page')));
+  });
 }
 
 function LoadBook(path, type){
@@ -32,6 +41,7 @@ function LoadBook(path, type){
       book.padlen=book.maxpage.toString().length;
       $('#textpage').hide();
       $('#parent').show();
+      $('#contents-btn').show();
       SetupDropdown();
       LoadPage(book.curpage);
     }).fail(function(){console.log('Failed to get book metadata.');});
@@ -45,6 +55,7 @@ function LoadBook(path, type){
       book.maxpage=data.length-1;
       $('#parent').hide();
       $('#textpage').show();
+      $('#contents-btn').show();
       LoadPage(book.curpage);
       SetupDropdown();
     }).fail(function(){console.log('Failed to get book text.');});
@@ -91,7 +102,7 @@ $(document).ready(function(){
   var booklist=$('#booklist');
   $.getJSON("data/books.json", function( data ) {
     $.each(data, function(i,book){
-      booklist.append('<div class="btn bookbutton"><a class="bookchoice" href="#" data-type="'+book.type+'" data-path="'+book.path+'">'+book.name+'</a></div>');
+      booklist.append('<div class="btn"><a class="bookchoice" href="#" data-type="'+book.type+'" data-path="'+book.path+'">'+book.name+'</a></div>');
     });
 
     $('.bookchoice').click(function(){
@@ -102,17 +113,21 @@ $(document).ready(function(){
 
   $('#booklist-btn').click(function(){
     $('#booklist').show();
-    $('#pagedrop').hide();
+    $('#contents-btn').hide();
+    $('#parent').hide();
+    $('#textpage').hide();
+    $('#contents').hide();
+  });
+
+  $('#contents-btn').click(function(){
+    $('#contents').show();
     $('#parent').hide();
     $('#textpage').hide();
   });
+
   $('#flipleft') .click(function(){ FlipPage(-1); });
   $('#flipright').click(function(){ FlipPage( 1); });
-  $('#pagedrop').change(function(){
-    if(!book.loaded) return;
-    console.log('Page drop changed');
-    LoadPage(parseInt($(this).val()));
-  });
+
   $(document).bind('keydown', function(event){
     if(!book.loaded) return;
 
