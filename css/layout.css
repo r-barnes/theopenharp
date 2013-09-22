@@ -5,6 +5,36 @@
   display:none;
 }
 
+#booklist {
+  margin-top:50px;
+}
+
+.bookbutton {
+  display: block;
+  width: 100%;
+  padding: 5px;
+  text-align: left;
+  text-shadow: none;
+  background: #f5f7f7;
+  border-radius: 0;
+  -webkit-border-radius: 0 !important;
+  min-height: 2em;
+  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  border-bottom:1px solid #DDD;
+  font-size:16pt;
+  /*font-family: 'OpenSansRegular';*/
+}
+
+.bookbutton:hover{
+  background-color:#E6E6E6;
+}
+
+.bookbutton a {
+  display: block;
+  text-decoration:none;
+  color:black;
+}
+
 #pagedrop {
   display:none;
 }

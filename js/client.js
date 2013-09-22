@@ -88,14 +88,15 @@ function FlipPage(inc){
 }
 
 $(document).ready(function(){
-  var dropdown=$('#booklist');
+  var booklist=$('#booklist');
   $.getJSON("data/books.json", function( data ) {
     $.each(data, function(i,book){
-      dropdown.append('<li><a class="bookchoice" href="#" data-type="'+book.type+'" data-path="'+book.path+'">'+book.name+'</a></li>');
+      booklist.append('<div class="btn bookbutton"><a class="bookchoice" href="#" data-type="'+book.type+'" data-path="'+book.path+'">'+book.name+'</a></div>');
     });
 
     $('.bookchoice').click(function(){
       LoadBook($(this).data('path'), $(this).data('type'));
+      $('#booklist').hide();
     });
   }).fail(function(){console.log('Error loading file');});
 
