@@ -100,7 +100,11 @@ $(document).ready(function(){
     });
   }).fail(function(){console.log('Error loading file');});
 
-
+  $('#booklist-btn').click(function(){
+    $('#booklist').show();
+    $('#parent').hide();
+    $('#textpage').hide();
+  });
   $('#flipleft') .click(function(){ FlipPage(-1); });
   $('#flipright').click(function(){ FlipPage( 1); });
   $('#pagedrop').change(function(){
