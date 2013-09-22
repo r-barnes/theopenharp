@@ -102,6 +102,7 @@ $(document).ready(function(){
 
   $('#booklist-btn').click(function(){
     $('#booklist').show();
+    $('#pagedrop').hide();
     $('#parent').hide();
     $('#textpage').hide();
   });
