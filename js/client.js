@@ -34,8 +34,7 @@ function LoadBook(path, type){
     $.getJSON('data/'+path+'/book.json', function(data){
       book=data;
       book.loaded=true;
-      book.curpage=1;
-      book.minpage=1;
+      book.curpage=book.minpage;
       book.type="images";
       book.pages='data/'+path+'/'+data.prefix;
       book.padlen=book.maxpage.toString().length;
@@ -56,8 +55,8 @@ function LoadBook(path, type){
       $('#parent').hide();
       $('#textpage').show();
       $('#contents-btn').show();
-      LoadPage(book.curpage);
       SetupDropdown();
+      LoadPage(book.curpage);
     }).fail(function(){console.log('Failed to get book text.');});
   }
 }
