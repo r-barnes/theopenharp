@@ -39,6 +39,7 @@ function LoadBook(path, type){
       book.pages='data/'+path+'/'+data.prefix;
       book.padlen=book.maxpage.toString().length;
       $('#textpage').hide();
+      $('#bookview').show();
       $('#parent').show();
       $('#contents-btn').show();
       SetupDropdown();
@@ -53,6 +54,7 @@ function LoadBook(path, type){
       book.minpage=0;
       book.maxpage=data.length-1;
       $('#parent').hide();
+      $('#bookview').show();
       $('#textpage').show();
       $('#contents-btn').show();
       SetupDropdown();
@@ -113,15 +115,13 @@ $(document).ready(function(){
   $('#booklist-btn').click(function(){
     $('#booklist').show();
     $('#contents-btn').hide();
-    $('#parent').hide();
-    $('#textpage').hide();
     $('#contents').hide();
+    $('#bookview').hide();
   });
 
   $('#contents-btn').click(function(){
-    $('#contents').show();
-    $('#parent').hide();
-    $('#textpage').hide();
+    $('#contents').toggle();
+    $('#bookview').toggle();
   });
 
   $('#flipleft') .click(function(){ FlipPage(-1); });

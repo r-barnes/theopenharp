@@ -13,6 +13,10 @@
   display:none;
 }
 
+#bookview {
+  display:none;
+}
+
 #booklist .btn, #contents .btn {
   display: block;
   width: 100%;
