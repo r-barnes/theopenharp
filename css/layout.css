@@ -5,6 +5,15 @@
   display:none;
 }
 
+#spinner {
+  position:fixed;left:50%;margin-left:-16px;top:200px;z-index:1000;
+  display:none;
+}
+
+#imagepage {
+  display:none;
+}
+
 #booklist, #contents {
   margin-top:50px;
 }

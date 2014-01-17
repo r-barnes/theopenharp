@@ -1,67 +1,39 @@
-var book={};
 var panzoom;
 
 function pad(num, size){ return ('000000000' + num).substr(-size); }
 
-function SetupDropdown(){
-  if(!book.loaded) return;
+var vent = {}; // or App.vent depending how you want to do this
+_.extend(vent, Backbone.Events);
 
-  var contents=$('#contents');
+var ContentsView = Backbone.View.extend({
+  el: '#contents',
 
-  contents.empty();
+  imageitem: _.template('<div class="btn"><a class="content" href="#" data-page="<%= i %>"><%= i %></a></div>'),
 
-  if(book.type=="images"){
-    for(var i=book.minpage;i<=book.maxpage;++i)
-      contents.append('<div class="btn"><a class="content" href="#" data-page="'+i+'">'+i+'</a></div>');
-  } else if (book.type=="text") {
-    for(var i=book.minpage;i<=book.maxpage;++i)
-      contents.append('<div class="btn"><a class="content" href="#" data-page="'+i+'">'+book.pages[i].number+" "+book.pages[i].name+'</a></div>');
+  textitem:  _.template('<div class="btn"><a class="content" href="#" data-page="<%= i %>"><%= songnumber %> <%= songname %></a></div>'),
+
+  events: {
+    "click a": "chosePage"
+  },
+
+  loadContents: function(book){
+    this.$el.empty();
+
+    if(book.booktype=="images"){
+      for(var i=book.minpage;i<=book.maxpage;++i)
+        this.$el.append(this.imageitem({i:i}));
+    } else if (book.booktype=="text") {
+      for(var i=book.minpage;i<=book.maxpage;++i)
+        this.$el.append(this.textitem({i:i, songnumber: book.pages[i].number, songname:book.pages[i].name}));
+    }
+  },
+
+  chosePage: function(ev){
+    this.$el.hide();
+    vent.trigger('showbook');
+    vent.trigger('loadpage',$(ev.target).data('page'));
   }
-
-  $('#contents a').click(function(){
-    if(!book.loaded) return;
-    $('#contents').hide();
-    if(book.type=="images")
-      $('#parent').show();
-    else if (book.type=="text")
-      $('#textpage').show();
-    LoadPage(parseInt($(this).data('page')));
-  });
-}
-
-function LoadBook(path, type){
-  if(type=="images"){
-    $.getJSON('data/'+path+'/book.json', function(data){
-      book=data;
-      book.loaded=true;
-      book.curpage=book.minpage;
-      book.type="images";
-      book.pages='data/'+path+'/'+data.prefix;
-      book.padlen=book.maxpage.toString().length;
-      $('#textpage').hide();
-      $('#bookview').show();
-      $('#parent').show();
-      $('#contents-btn').show();
-      SetupDropdown();
-      LoadPage(book.curpage);
-    }).fail(function(){console.log('Failed to get book metadata.');});
-  } else if (type=="text") {
-    $.getJSON('data/lyrics_'+path+'.json', function(data){
-      book.pages=data;
-      book.type="text";
-      book.loaded=true;
-      book.curpage=0;
-      book.minpage=0;
-      book.maxpage=data.length-1;
-      $('#parent').hide();
-      $('#bookview').show();
-      $('#textpage').show();
-      $('#contents-btn').show();
-      SetupDropdown();
-      LoadPage(book.curpage);
-    }).fail(function(){console.log('Failed to get book text.');});
-  }
-}
+});
 
 function SetupZoom(){
   panzoom = $('#panzoom').panzoom();
@@ -76,41 +48,130 @@ function SetupZoom(){
   });
 }
 
-function LoadPage(page){
-  book.curpage=page;
-  if(book.type=="images"){
-    $('#curpage').attr('src',book.pages+pad(page,book.padlen)+book.suffix);
-    SetupZoom();
-  } else if (book.type=="text") {
-    $('#textpage .name').html(book.pages[book.curpage].name);
-    $('#textpage .number').html(book.pages[book.curpage].number);
-    $('.words').html(book.pages[book.curpage].words);
-    $('.tune').html(book.pages[book.curpage].tune);
-    $('#textpage .lyrics').html(book.pages[book.curpage].lyrics);
-  }
-  $('#pagedrop').val(book.curpage);
-  console.log('Page loaded.');
-}
+var BookView = Backbone.View.extend({
+  el: '#bookview',
 
-function FlipPage(inc){
-  if(!book.loaded) return;
-  if(book.curpage+inc>=book.minpage && book.curpage+inc<=book.maxpage)
-    LoadPage(book.curpage+inc);
-  return false;
-}
+  initialize: function(){
+    vent.on('showbook', this.showBook.bind(this));
+    vent.on('loadpage', this.loadPage.bind(this));
+    this.imagepage = $('#imagepage');
+    this.textpage  = $('#textpage');
+    this.spinner   = $('#spinner');
+    this.contents  = new ContentsView();
+  },
+
+  loadBook: function(path, booktype){
+    var self=this;
+
+    self.path=path;
+    self.booktype=booktype;
+
+    if(this.booktype=="images"){
+      this.textpage.hide();
+      this.imagepage.show();
+      $.getJSON('data/'+self.path+'/book.json', function(data){
+        _.extend(self, data);
+        self.info=data;
+        self.loaded=true;
+        self.curpage=self.minpage;
+        self.booktype="images";
+        self.pages='data/'+self.path+'/'+self.prefix;
+        self.padlen=self.maxpage.toString().length;
+        $('#textpage').hide();
+        $('#bookview').show();
+        $('#parent').show();
+        $('#contents-btn').show();
+        self.contents.loadContents(self);
+        self.loadPage(self.curpage);
+      }).fail(function(){console.log('Failed to get book metadata.');});
+    } else if (this.booktype=="text") {
+      this.imagepage.hide();
+      this.textpage.show();
+      $.getJSON('data/lyrics_'+this.path+'.json', function(data){
+        _.extend(self, data);
+        self.pages=data;
+        self.booktype="text";
+        self.loaded=true;
+        self.curpage=0;
+        self.minpage=0;
+        self.maxpage=self.length-1;
+        $('#parent').hide();
+        $('#bookview').show();
+        $('#textpage').show();
+        $('#contents-btn').show();
+        self.contents.loadContents(self);
+        self.loadPage(self.curpage);
+      }).fail(function(){console.log('Failed to get book text.');});
+    }
+  },
+
+  events: {
+    "click #flipleft":  "flipPage",
+    "click #flipright": "flipPage",
+  },
+
+  flipPage: function(ev){
+    if(!this.loaded) return;
+    var inc=$(ev.target).data('inc');
+    if(this.curpage+inc>=this.minpage && this.curpage+inc<=this.maxpage)
+      this.loadPage(this.curpage+inc);
+    return false;
+  },
+
+  loadPage: function(page){
+    var self=this;
+    this.curpage=page;
+
+    if(this.booktype=="images"){
+      this.spinner.show();
+      var newpage = new Image();
+      newpage.src = this.pages+pad(page,this.padlen)+this.suffix;
+      $(newpage).load(function() { $('#curpage').attr('src',this.src); self.spinner.hide(); });
+      SetupZoom();
+    } else if (this.type=="text") {
+      $('#textpage .name').html(this.pages[this.curpage].name);
+      $('#textpage .number').html(this.pages[this.curpage].number);
+      $('.words').html(this.pages[this.curpage].words);
+      $('.tune').html(this.pages[this.curpage].tune);
+      $('#textpage .lyrics').html(this.pages[this.curpage].lyrics);
+    }
+    $('#pagedrop').val(this.curpage);
+  },
+
+  showBook: function(){
+    this.$el.show();
+  }
+});
+
+
+var BookListView = Backbone.View.extend({
+  el: '#booklist',
+
+  initialize: function(options){
+    var self=this;
+    this.bookview=options.bookview;
+
+    $.getJSON("data/books.json", function( data ) {
+      $.each(data, function(i,book){
+        self.$el.append('<div class="btn"><a class="bookchoice" href="#" data-type="'+book.type+'" data-path="'+book.path+'">'+book.name+'</a></div>');
+      });
+    }).fail(function(){console.log('Error loading file');});
+  },
+
+  events: {
+    "click .bookchoice": "bookchoice",
+  },
+
+  bookchoice: function(e){
+    var item=e.currentTarget;
+    this.bookview.loadBook($(item).data('path'), $(item).data('type'));
+    this.$el.hide();
+  }
+});
+
 
 $(document).ready(function(){
-  var booklist=$('#booklist');
-  $.getJSON("data/books.json", function( data ) {
-    $.each(data, function(i,book){
-      booklist.append('<div class="btn"><a class="bookchoice" href="#" data-type="'+book.type+'" data-path="'+book.path+'">'+book.name+'</a></div>');
-    });
-
-    $('.bookchoice').click(function(){
-      LoadBook($(this).data('path'), $(this).data('type'));
-      $('#booklist').hide();
-    });
-  }).fail(function(){console.log('Error loading file');});
+  var booklist=new BookListView({bookview:new BookView()});
 
   $('#booklist-btn').click(function(){
     $('#booklist').show();
@@ -124,10 +185,7 @@ $(document).ready(function(){
     $('#bookview').toggle();
   });
 
-  $('#flipleft') .click(function(){ FlipPage(-1); });
-  $('#flipright').click(function(){ FlipPage( 1); });
-
-  $(document).bind('keydown', function(event){
+  /*$(document).bind('keydown', function(event){
     if(!book.loaded) return;
 
     var img = $('#curpage');
@@ -153,7 +211,7 @@ $(document).ready(function(){
       $('#panzoom').panzoom("pan", -30, 0, { relative: true });
     }
   })
-
+*/
 //  $("#curpage").draggable({containment: "#viewport", scroll: false});
 /*  $("#curpage").on("drag", function(){
       $(this).css("background-position", "-" + $(this).position().left + "px -" + $(this).position().top + "px")
