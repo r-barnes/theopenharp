@@ -32,6 +32,7 @@ var ContentsView = Backbone.View.extend({
     this.$el.hide();
     vent.trigger('showbook');
     vent.trigger('loadpage',$(ev.target).data('page'));
+    return false;
   }
 });
 
@@ -72,9 +73,10 @@ var BookView = Backbone.View.extend({
   toggleContents: function(){
     this.$el.toggle();
     this.contents.$el.toggle();
+    return false;
   },
 
-  loadBook: function(path, booktype){
+  loadBook: function(path, booktype, whichpage){
     var self=this;
 
     self.path=path;
@@ -87,7 +89,10 @@ var BookView = Backbone.View.extend({
         _.extend(self, data);
         self.info=data;
         self.loaded=true;
-        self.curpage=self.minpage;
+        if(typeof(whichpage)!=="undefined")
+          self.curpage=whichpage;
+        else
+          self.curpage=self.minpage;
         self.booktype="images";
         self.pages='data/'+self.path+'/'+self.prefix;
         self.padlen=self.maxpage.toString().length;
@@ -95,15 +100,16 @@ var BookView = Backbone.View.extend({
         self.loadPage(self.curpage);
       }).fail(function(){console.log('Failed to get book metadata.');});
     } else if (this.booktype=="text") {
-      console.log('load text book');
       this.imagepage.hide();
       this.textpage.show();
       $.getJSON('data/lyrics_'+self.path+'.json', function(data){
-        console.log(data);
         self.pages=data;
         self.booktype="text";
         self.loaded=true;
-        self.curpage=0;
+        if(typeof(whichpage)!=="undefined")
+          self.curpage=whichpage;
+        else
+          self.curpage=0;
         self.minpage=0;
         self.maxpage=self.pages.length-1;
         self.contents.loadContents(self);
@@ -132,6 +138,7 @@ var BookView = Backbone.View.extend({
     this.curpage=page;
 
     this.pagenumber.html(this.curpage);
+    app_router.navigate("books/"+self.path+"/"+this.curpage);
 
     if(this.booktype=="images"){
       this.spinner.show();
@@ -140,8 +147,6 @@ var BookView = Backbone.View.extend({
       $(newpage).load(function() { $('#curpage').attr('src',this.src); self.spinner.hide(); });
       SetupZoom();
     } else if (this.booktype=="text") {
-      console.log('here');
-      console.log(this.pages[this.curpage]);
       $('#textpage .name').html(this.pages[this.curpage].name);
       $('#textpage .number').html(this.pages[this.curpage].number);
       $('.words').html(this.pages[this.curpage].words);
@@ -190,19 +195,37 @@ var BookListView = Backbone.View.extend({
 
   initialize: function(options){
     var self=this;
-    this.bookview=options.bookview;
+    this.bookview=new BookView();
 
     $('#booklist-btn').click(this.show.bind(self));
+
+    vent.on('loadbook', this.loadBook.bind(self));
 
     $.getJSON("data/books.json", function( data ) {
       $.each(data, function(i,book){
         self.$el.append('<div class="btn"><a class="bookchoice" href="#" data-type="'+book.type+'" data-path="'+book.path+'">'+book.name+'</a></div>');
       });
-    }).fail(function(){console.log('Error loading file');});
+    }).fail(function(){console.log('Error loading file');})
+    .done(function(){
+      app_router=new AppRouter();
+      Backbone.history.start();
+    });
   },
 
   events: {
     "click .bookchoice": "bookchoice",
+  },
+
+  loadBook: function(bookpath,whichpage){
+    var self=this;
+    $('.bookchoice').each(function(i,obj){
+      if($(obj).data('path')==bookpath){
+        self.bookview.loadBook($(obj).data('path'), $(obj).data('type'),parseInt(whichpage));
+        self.$el.hide();
+        vent.trigger('showbook');
+        return false;
+      }
+    });
   },
 
   bookchoice: function(e){
@@ -218,10 +241,19 @@ var BookListView = Backbone.View.extend({
   }
 });
 
+var AppRouter = Backbone.Router.extend({
 
-$(document).ready(function(){
-  var booklist=new BookListView({bookview:new BookView()});
+  routes: {
+    "books/:book/:page": "loadBookPage",
+  },
+
+  loadBookPage: function(book, page) {
+    vent.trigger('loadbook',book,page);
+  }
 });
+
+var booklist=new BookListView();
+var app_router;
 
 //  $("#curpage").draggable({containment: "#viewport", scroll: false});
 /*  $("#curpage").on("drag", function(){
