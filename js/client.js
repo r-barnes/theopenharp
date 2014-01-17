@@ -60,10 +60,11 @@ var BookView = Backbone.View.extend({
 
     $('#contents-btn').click(this.toggleContents.bind(self));
 
-    this.imagepage = $('#imagepage');
-    this.textpage  = $('#textpage');
-    this.spinner   = $('#spinner');
-    this.contents  = new ContentsView();
+    this.imagepage  = $('#imagepage');
+    this.textpage   = $('#textpage');
+    this.spinner    = $('#spinner');
+    this.contents   = new ContentsView();
+    this.pagenumber = $('#pagenumber');
     $(document).bind('keydown', this.keydown.bind(this));
   },
 
@@ -116,8 +117,8 @@ var BookView = Backbone.View.extend({
     "click #flipright": "flipRight",
   },
 
-  flipLeft:  function(){ flipPage(-1); },
-  flipRight: function(){ flipPage( 1); },
+  flipLeft:  function(){ this.flipPage(-1); },
+  flipRight: function(){ this.flipPage( 1); },
 
   flipPage: function(inc){
     if(this.curpage+inc>=this.minpage && this.curpage+inc<=this.maxpage)
@@ -128,6 +129,8 @@ var BookView = Backbone.View.extend({
   loadPage: function(page){
     var self=this;
     this.curpage=page;
+
+    this.pagenumber.html(this.curpage);
 
     if(this.booktype=="images"){
       this.spinner.show();
@@ -160,14 +163,16 @@ var BookView = Backbone.View.extend({
       return false;
 //    } else if (key==187) { //Plus Key and Equals key
 //    } else if (key==189) { //Minus key
-    } else if (key==40 && this.booktype=="images") { //Down key
-      $('#panzoom').panzoom("pan", 0, -30, { relative: true });
-    } else if (key==38 && this.booktype=="images") { //Up key
-      $('#panzoom').panzoom("pan", 0, 30, { relative: true });
-    } else if (key==37 && this.booktype=="images") { //Left key
-      $('#panzoom').panzoom("pan", 30, 0, { relative: true });
-    } else if (key==39 && this.booktype=="images") { //Right key
-      $('#panzoom').panzoom("pan", -30, 0, { relative: true });
+    } else if (this.booktype=="images") {
+      if (key==40) { //Down key
+        $('#panzoom').panzoom("pan", 0, -30, { relative: true });
+      } else if (key==38) { //Up key
+        $('#panzoom').panzoom("pan", 0, 30, { relative: true });
+      } else if (key==37) { //Left key
+        $('#panzoom').panzoom("pan", 30, 0, { relative: true });
+      } else if (key==39) { //Right key
+        $('#panzoom').panzoom("pan", -30, 0, { relative: true });
+      }
     }
   },
 
@@ -215,18 +220,6 @@ var BookListView = Backbone.View.extend({
 
 $(document).ready(function(){
   var booklist=new BookListView({bookview:new BookView()});
-
-/*
-  $('#booklist-btn').click(function(){
-    $('#booklist').show();
-    $('#contents-btn').hide();
-    $('#contents').hide();
-    $('#bookview').hide();
-  });*/
-
-
-
-
 });
 
 //  $("#curpage").draggable({containment: "#viewport", scroll: false});

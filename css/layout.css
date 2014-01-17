@@ -67,6 +67,16 @@
   height:100%;
 }
 
+#pagenumber {
+  position:fixed;
+  bottom:5px;
+  width:50px;
+  left:50%;
+  margin-left:-25px;
+  font-size:25px;
+  z-index:1;
+}
+
 #flipleft, #flipright {
   position:fixed;
   bottom:5px;
