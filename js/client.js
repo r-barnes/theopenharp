@@ -37,6 +37,7 @@ var ContentsView = Backbone.View.extend({
 
 function SetupZoom(){
   panzoom = $('#panzoom').panzoom();
+  panzoom.parent().unbind('mousewheel.focal');
   panzoom.parent().on('mousewheel.focal', function( e ) {
     e.preventDefault();
     var delta = e.delta || e.originalEvent.wheelDelta;
