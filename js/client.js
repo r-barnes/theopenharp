@@ -77,32 +77,26 @@ var BookView = Backbone.View.extend({
         self.booktype="images";
         self.pages='data/'+self.path+'/'+self.prefix;
         self.padlen=self.maxpage.toString().length;
-        $('#textpage').hide();
-        $('#bookview').show();
-        $('#parent').show();
-        $('#contents-btn').show();
         self.contents.loadContents(self);
         self.loadPage(self.curpage);
       }).fail(function(){console.log('Failed to get book metadata.');});
     } else if (this.booktype=="text") {
+      console.log('load text book');
       this.imagepage.hide();
       this.textpage.show();
-      $.getJSON('data/lyrics_'+this.path+'.json', function(data){
-        _.extend(self, data);
+      $.getJSON('data/lyrics_'+self.path+'.json', function(data){
+        console.log(data);
         self.pages=data;
         self.booktype="text";
         self.loaded=true;
         self.curpage=0;
         self.minpage=0;
-        self.maxpage=self.length-1;
-        $('#parent').hide();
-        $('#bookview').show();
-        $('#textpage').show();
-        $('#contents-btn').show();
+        self.maxpage=self.pages.length-1;
         self.contents.loadContents(self);
         self.loadPage(self.curpage);
       }).fail(function(){console.log('Failed to get book text.');});
     }
+    $('#contents-btn').show();
   },
 
   events: {
@@ -128,12 +122,15 @@ var BookView = Backbone.View.extend({
       newpage.src = this.pages+pad(page,this.padlen)+this.suffix;
       $(newpage).load(function() { $('#curpage').attr('src',this.src); self.spinner.hide(); });
       SetupZoom();
-    } else if (this.type=="text") {
+    } else if (this.booktype=="text") {
+      console.log('here');
+      console.log(this.pages[this.curpage]);
       $('#textpage .name').html(this.pages[this.curpage].name);
       $('#textpage .number').html(this.pages[this.curpage].number);
       $('.words').html(this.pages[this.curpage].words);
       $('.tune').html(this.pages[this.curpage].tune);
       $('#textpage .lyrics').html(this.pages[this.curpage].lyrics);
+      $('#textpage').show();
     }
     $('#pagedrop').val(this.curpage);
   },
@@ -166,6 +163,7 @@ var BookListView = Backbone.View.extend({
     var item=e.currentTarget;
     this.bookview.loadBook($(item).data('path'), $(item).data('type'));
     this.$el.hide();
+    vent.trigger('showbook');
   }
 });
 

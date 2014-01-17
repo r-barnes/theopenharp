@@ -61,10 +61,6 @@
   font-weight:bold;
 }
 
-#parent {
-  display:none;
-}
-
 #parent, #panzoom {
   position:fixed;
   width:100%;
@@ -81,7 +77,6 @@
 
 .flip-btn img {
   opacity:0.5;
-  display:none;
 }
 
 .flip-btn:hover img {
