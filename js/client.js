@@ -252,8 +252,142 @@ var AppRouter = Backbone.Router.extend({
   }
 });
 
-var booklist=new BookListView();
-var app_router;
+
+
+
+
+var VizView = Backbone.View.extend({
+  el: '#vizview',
+
+  initialize: function(){},
+
+  display: function(data){
+    var margin = {top: 20, right: 20, bottom: 30, left: 50},
+        width = 960 - margin.left - margin.right,
+        height = 500 - margin.top - margin.bottom;
+
+    var parseDate  = d3.time.format("%Y-%m-%d").parse;
+    var parseTime  = d3.time.format("%H:%M").parse;
+    var bisectDate = d3.bisector(function(d) { return d.date; }).left;
+
+    var x = d3.time.scale()
+        .range([0, width]);
+
+    var y = d3.scale.linear()
+        .range([height, 0]);
+
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient("bottom");
+
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient("left");
+
+    var area = d3.svg.area()
+        .x(function(d) { return x(d.date); })
+        .y0(function(d) { return y(d.low); })
+        .y1(function(d) { return y(d.high); });
+
+    var svg = d3.select("body").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    d3.csv("zbob", function(error, data) {
+      data.forEach(function(d) {
+        d.date = parseDate(d.Date);
+        console.log(parseTime(d.Wake.trim()));
+        d.low      = parseTime(d.Wake.trim());
+        d.low      = d.low.getHours()+d.low.getMinutes()/60.0;
+        d.high     = parseTime(d.FirstAttempt.trim());
+        d.high     = d.high.getHours()+d.high.getMinutes()/60.0;
+        if(d.high<18)
+          d.high+=24;
+        d.duration = d.high-d.low
+        console.log(d);
+      });
+
+      x.domain(d3.extent(data, function(d) { return d.date; }));
+      y.domain([d3.min(data, function(d) { return d.low; }), d3.max(data, function(d) { return d.high; })]);
+
+      svg.append("path")
+          .datum(data)
+          .attr("class", "area")
+          .attr("d", area)
+          .on("mouseover", function() { focus.style("display", null  ); dateline.style("display",null  ); })
+          .on("mouseout",  function() { focus.style("display", "none"); dateline.style("display","none"); })
+          .on("mousemove", mousemove);
+
+      svg.append("g")
+          .attr("class", "x axis")
+          .attr("transform", "translate(0," + height + ")")
+          .call(xAxis);
+
+      svg.append("g")
+          .attr("class", "y axis")
+          .call(yAxis)
+        .append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 6)
+          .attr("dy", ".71em")
+          .style("text-anchor", "end")
+          .text("Hour of Day");
+
+      var focus = svg.append("g")
+          .attr("class", "focus")
+          .style("display", "none");
+
+      focus.append("circle")
+          .attr("r", 4.5);
+
+      focus.append("text")
+          .attr("x", 9)
+          .attr("dy", ".35em")
+          .attr("class", "times");
+      focus.append("text")
+          .attr("x", 9)
+          .attr("dy", "1.35em")
+          .attr("class", "duration");
+
+      var dateline = svg.append('line')
+                        .attr({
+                            'x1': 0,
+                            'y1': 8,
+                            'x2': 0,
+                            'y2': 20
+                        })
+                        .attr("stroke", "black")
+                        .attr('class', 'verticalLine');
+
+      function mousemove() {
+          var x0 = x.invert(d3.mouse(this)[0]),
+              i = bisectDate(data, x0, 1),
+              d0 = data[i - 1],
+              d1 = data[i],
+              d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+          focus.attr("transform", "translate(" + x(d.date) + "," + y(18) + ")");
+          focus.select(".times").text(d.Wake + " - " + d.FirstAttempt);
+          focus.select(".duration").text(d.duration.toFixed(2) + "hrs");
+          dateline.attr({
+            x1:x(d.date),
+            x2:x(d.date),
+            y1:y(d.low),
+            y2:y(d.high)
+          });
+        }
+    });
+  }
+});
+
+
+var booklist = new BookListView();
+
+
+
+
+
 
 //  $("#curpage").draggable({containment: "#viewport", scroll: false});
 /*  $("#curpage").on("drag", function(){
