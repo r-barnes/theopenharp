@@ -1,0 +1,67 @@
+[
+  {
+    "name":"Denison 1860 Scanned",
+    "path":"denison1860",
+    "type":"images"
+  },
+  {
+    "name":"Denison 1991 Text",
+    "path":"denison1991",
+    "type":"text"
+  },
+  {
+    "name":"Federal Harmony",
+    "path":"federal_harmony",
+    "type":"images"
+  },
+  {
+    "name":"Harmony of Maine",
+    "path":"maine",
+    "type":"images"
+  },
+  {
+    "name":"Lloyd",
+    "path":"lloyd",
+    "type":"images"
+  },
+  {
+    "name":"Norristown Musical Teacher",
+    "path":"norristown",
+    "type":"images"
+  },
+  {
+    "name":"Original Sacred Harp (James: 1911)",
+    "path":"original_sacred_harp",
+    "type":"images"
+  },
+  {
+    "name":"Sacred Tunes and Hymns (James: 1913)",
+    "path":"james",
+    "type":"images"
+  },
+  {
+    "name":"Southern Harmony",
+    "path":"southern_harmony",
+    "type":"images"
+  },
+  {
+    "name":"Southern and Western Pocket Harmonist",
+    "path":"swpocket",
+    "type":"images"
+  },
+  {
+    "name":"Southern Harp",
+    "path":"southern_harp",
+    "type":"images"
+  },
+  {
+    "name":"Union Harp",
+    "path":"union_harp",
+    "type":"images"
+  },
+  {
+    "name":"Wyeth's Repository of Sacred Music",
+    "path":"repository_of_sacred",
+    "type":"images"
+  }
+]
