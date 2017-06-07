@@ -8,10 +8,7 @@ _.extend(vent, Backbone.Events);
 var ContentsView = Backbone.View.extend({
   el: '#contents',
 
-  imageitem: _.template('<div class="btn"><a class="content" href="#" data-page="<%= i %>">X<%= i %></a></div>'),
-  image_and_data_item: _.template('<div class="btn"><a class="content" href="#" data-page="<%= i %>"><%= songnumber %> <%= songname %></a></div>'),
-
-  textitem:  _.template('<div class="btn"><a class="content" href="#" data-page="<%= i %>"><%= songnumber %> <%= songname %></a></div>'),
+  contentsitem:  _.template('<div class="btn"><a class="content" href="#" data-page="<%= i %>"><%= songnumber %> <%= songname %></a></div>'),
 
   events: {
     "click a": "chosePage"
@@ -20,17 +17,22 @@ var ContentsView = Backbone.View.extend({
   loadContents: function(book){
     this.$el.empty();
 
-    if(book.booktype=="images"){
-      console.log(book);
-      for(var i=book.minpage;i<=book.maxpage;++i){
-        if('pages' in book && i in book.pages)
-          this.$el.append(this.image_and_data_item({i:i, songnumber: book.pages[i].number, songname:book.pages[i].name}));
-        else
-          this.$el.append(this.imageitem({i:i}));
+    if(!('page1' in book))
+      book.page1 = 1;
+
+    for(var i=book.minpage;i<=book.maxpage;++i){
+      var songnumber = i;
+      var songname = "";
+      if(i<book.page1)
+        songnumber = "P"+i.toString();
+      else
+        songnumber = i-book.page1+1;
+      
+      if('pages' in book && i in book.pages){
+        songnumber = book.pages[i].number;
+        songname   = book.pages[i].name;
       }
-    } else if (book.booktype=="text") {
-      for(var i=book.minpage;i<=book.maxpage;++i)
-        this.$el.append(this.textitem({i:i, songnumber: book.pages[i].number, songname:book.pages[i].name}));
+      this.$el.append(this.contentsitem({i:i, songnumber: songnumber, songname:songname}));
     }
   },
 
