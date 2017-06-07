@@ -8,7 +8,8 @@ _.extend(vent, Backbone.Events);
 var ContentsView = Backbone.View.extend({
   el: '#contents',
 
-  imageitem: _.template('<div class="btn"><a class="content" href="#" data-page="<%= i %>"><%= i %></a></div>'),
+  imageitem: _.template('<div class="btn"><a class="content" href="#" data-page="<%= i %>">X<%= i %></a></div>'),
+  image_and_data_item: _.template('<div class="btn"><a class="content" href="#" data-page="<%= i %>"><%= songnumber %> <%= songname %></a></div>'),
 
   textitem:  _.template('<div class="btn"><a class="content" href="#" data-page="<%= i %>"><%= songnumber %> <%= songname %></a></div>'),
 
@@ -20,8 +21,13 @@ var ContentsView = Backbone.View.extend({
     this.$el.empty();
 
     if(book.booktype=="images"){
-      for(var i=book.minpage;i<=book.maxpage;++i)
-        this.$el.append(this.imageitem({i:i}));
+      console.log(book);
+      for(var i=book.minpage;i<=book.maxpage;++i){
+        if('pages' in book && i in book.pages)
+          this.$el.append(this.image_and_data_item({i:i, songnumber: book.pages[i].number, songname:book.pages[i].name}));
+        else
+          this.$el.append(this.imageitem({i:i}));
+      }
     } else if (book.booktype=="text") {
       for(var i=book.minpage;i<=book.maxpage;++i)
         this.$el.append(this.textitem({i:i, songnumber: book.pages[i].number, songname:book.pages[i].name}));
@@ -87,15 +93,16 @@ var BookView = Backbone.View.extend({
       this.imagepage.show();
       $.getJSON('data/'+self.path+'/book.json', function(data){
         _.extend(self, data);
+        console.log('data',data);
         self.info=data;
         self.loaded=true;
         if(typeof(whichpage)!=="undefined")
           self.curpage=whichpage;
         else
           self.curpage=self.minpage;
-        self.booktype="images";
-        self.pages='data/'+self.path+'/'+self.prefix;
-        self.padlen=self.maxpage.toString().length;
+        self.booktype  = "images";
+        self.imgprefix = 'data/'+self.path+'/'+self.prefix;
+        self.padlen    = self.maxpage.toString().length;
         self.contents.loadContents(self);
         self.loadPage(self.curpage);
       }).fail(function(){console.log('Failed to get book metadata.');});
@@ -143,7 +150,7 @@ var BookView = Backbone.View.extend({
     if(this.booktype=="images"){
       this.spinner.show();
       var newpage = new Image();
-      newpage.src = this.pages+pad(page,this.padlen)+this.suffix;
+      newpage.src = this.imgprefix+pad(page,this.padlen)+this.suffix;
       $(newpage).load(function() { $('#curpage').attr('src',this.src); self.spinner.hide(); });
       SetupZoom();
     } else if (this.booktype=="text") {
